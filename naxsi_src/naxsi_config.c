@@ -183,21 +183,27 @@ dummy_score(ngx_conf_t *r, ngx_str_t *tmp, ngx_http_rule_t *rule)
 }
 
 //#define dummy_zone_debug
+#define mz_static 0
+#define mz_regex 1
+
+#define mz_coherency(current) if (type != current && type != -1) {  ngx_conf_log_error(NGX_LOG_EMERG, r, 0, "type differs %d vs %d", type, current); return (NGX_CONF_ERROR); } else { type = current; }
 void	*
 dummy_zone(ngx_conf_t *r, ngx_str_t *tmp, ngx_http_rule_t *rule)
 {
   int					tmp_len;
   ngx_http_custom_rule_location_t	*custom_rule;
   char *tmp_ptr, *tmp_end;
+  int		type; /*to trace mixup of static/dynamic: -1=unset, 0=static, 1=dynamic*/
+  
 
-
+  
   if (!rule->br)
     return (NGX_CONF_ERROR);
   /* #ifdef dummy_zone_debug */
   /*   ngx_conf_log_error(NGX_LOG_EMERG, r, 0, "FEU:%V", tmp); */
   /* #endif   */
 
-  
+  type = -1;
   tmp_ptr = (char *) tmp->data+strlen(MATCH_ZONE_T);
   while (*tmp_ptr) {
     /* #ifdef dummy_zone_debug  */
@@ -272,23 +278,27 @@ dummy_zone(ngx_conf_t *r, ngx_str_t *tmp, ngx_http_rule_t *rule)
 		    custom_rule->args_var = 1;
 		    rule->br->args_var = 1;
 		    tmp_ptr += strlen(MZ_GET_VAR_T);
+		    mz_coherency(mz_static);
 		  }
 		  else if (!strncmp(tmp_ptr, MZ_POST_VAR_T, 
 				    strlen(MZ_POST_VAR_T))) {
 		    custom_rule->body_var = 1;
 		    rule->br->body_var = 1;
 		    tmp_ptr += strlen(MZ_POST_VAR_T);
+		    mz_coherency(mz_static);
 		  }
 		  else if (!strncmp(tmp_ptr, MZ_HEADER_VAR_T, 
 				    strlen(MZ_HEADER_VAR_T))) {
 		    custom_rule->headers_var = 1;
 		    rule->br->headers_var = 1;
 		    tmp_ptr += strlen(MZ_HEADER_VAR_T);
+		    mz_coherency(mz_static);
 		  }
 		  else if (!strncmp(tmp_ptr, MZ_SPECIFIC_URL_T, 
 				    strlen(MZ_SPECIFIC_URL_T))) { 
 		    custom_rule->specific_url = 1; 
 		    tmp_ptr += strlen(MZ_SPECIFIC_URL_T);
+		    mz_coherency(mz_static);
 		  }
 		  else 
 		    /* add support for regex-style match zones. 
@@ -304,6 +314,7 @@ dummy_zone(ngx_conf_t *r, ngx_str_t *tmp, ngx_http_rule_t *rule)
 		      rule->br->args_var = 1;
 		      rule->br->rx_mz = 1;
 		      tmp_ptr += strlen(MZ_GET_VAR_X);
+		      mz_coherency(mz_regex);
 		    }
 		    else if (!strncmp(tmp_ptr, MZ_POST_VAR_X, 
 				      strlen(MZ_POST_VAR_X))) {
@@ -311,6 +322,7 @@ dummy_zone(ngx_conf_t *r, ngx_str_t *tmp, ngx_http_rule_t *rule)
 		      custom_rule->body_var = 1;
 		      rule->br->body_var = 1;
 		      tmp_ptr += strlen(MZ_POST_VAR_X);
+		      mz_coherency(mz_regex);
 		    }
 		    else if (!strncmp(tmp_ptr, MZ_HEADER_VAR_X, 
 				      strlen(MZ_HEADER_VAR_X))) {
@@ -318,12 +330,14 @@ dummy_zone(ngx_conf_t *r, ngx_str_t *tmp, ngx_http_rule_t *rule)
 		      rule->br->headers_var = 1;
 		      rule->br->rx_mz = 1;
 		      tmp_ptr += strlen(MZ_HEADER_VAR_X);
+		      mz_coherency(mz_regex);
 		    }
 		    else if (!strncmp(tmp_ptr, MZ_SPECIFIC_URL_X, 
 				      strlen(MZ_SPECIFIC_URL_X))) { 
 		      custom_rule->specific_url = 1;
 		      rule->br->rx_mz = 1;
 		      tmp_ptr += strlen(MZ_SPECIFIC_URL_X);
+		      mz_coherency(mz_regex);
 		    }
 		    else 
 		      return (NGX_CONF_ERROR);

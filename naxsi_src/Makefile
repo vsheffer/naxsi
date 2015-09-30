@@ -5,7 +5,7 @@ CAK		:=
 #1 : LCOV is enabled, and coverage report is generated.
 COV 		:= 0
 #Allows to force for specific UT only
-#TEST 		:= "23*.t"
+#TEST 		:= "24*.t"
 define NAXSI_CFG=
 master_process off;
 worker_processes  1;

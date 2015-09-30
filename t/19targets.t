@@ -138,7 +138,7 @@ location / {
          CheckRule "$RFI >= 8" BLOCK;
          CheckRule "$TRAVERSAL >= 4" BLOCK;
          CheckRule "$XSS >= 8" BLOCK;
-	 BasicRule wl:1999 "mz:$ARGS_VAR:bla|$URL:/x";
+	 BasicRule wl:1999 "mz:$ARGS_VAR_X:^bla$|$URL_X:^/x$";
          root $TEST_NGINX_SERVROOT/html/;
          index index.html index.htm;
 }
@@ -181,7 +181,7 @@ location / {
 	 LearningMode;
          DeniedUrl "/RequestDenied";
          CheckRule "$FOO >= 8" DROP;
-	 BasicRule wl:1999 "mz:$URL:/|$ARGS_VAR_X:^bla$";
+	 BasicRule wl:1999 "mz:$URL_X:^/$|$ARGS_VAR_X:^bla$";
          root $TEST_NGINX_SERVROOT/html/;
          index index.html index.htm;
 }
@@ -201,7 +201,7 @@ location / {
 	 LearningMode;
          DeniedUrl "/RequestDenied";
          CheckRule "$FOO >= 8" DROP;
-	 BasicRule wl:1999 "mz:$URL:/|$ARGS_VAR_X:^bla1";
+	 BasicRule wl:1999 "mz:$URL_X:^/$|$ARGS_VAR_X:^bla1";
          root $TEST_NGINX_SERVROOT/html/;
          index index.html index.htm;
 }
