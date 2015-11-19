@@ -144,7 +144,12 @@ if options.filter is not None:
     #pprint.pprint(cfg.cfg["global_filters"])
 
 
-es = elasticsearch.Elasticsearch(cfg.cfg["elastic"]["host"], connection_class=elasticsearch.AwsHttpConnection)
+if cfg.cfg["elastic"]["aws"] == "false":
+  es = elasticsearch.Elasticsearch(cfg.cfg["elastic"]["host"])
+else:
+  es = elasticsearch.Elasticsearch(cfg.cfg["elastic"]["host"], connection_class=elasticsearch.AwsHttpConnection)
+
+#es.indices.delete('nxapi')
 translate = NxTranslate(es, cfg)
 
 
